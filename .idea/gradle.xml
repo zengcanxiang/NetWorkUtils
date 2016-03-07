@@ -10,6 +10,9 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/NetWork" />
+            <option value="$PROJECT_DIR$/NoHttpNetWorkUtils" />
+            <option value="$PROJECT_DIR$/OkHttpNetWorkUtils" />
+            <option value="$PROJECT_DIR$/OkNetWorkUtils" />
             <option value="$PROJECT_DIR$/app" />
           </set>
         </option>

@@ -1,5 +1,7 @@
 package com.zengcanxiang.network;
 
+import com.zengcanxiang.network.NetWorkCallback.NetWorkCallback;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,7 +9,8 @@ import java.util.HashMap;
 /**
  * Created by zengcanxiang on 2016/2/26.
  */
-public abstract class NetWork {
+public abstract class NetWork<T> {
+
     /**
      * 网络层的post请求方法
      *
@@ -18,7 +21,7 @@ public abstract class NetWork {
      * @param what      请求标识,NoHttp需要
      */
     public abstract void post(HashMap<String, String> paramsMap, String url,
-                              Object callback, Object tag, int... what);
+                              NetWorkCallback<T> callback, Object tag, int... what);
 
     /**
      * 网络层的get请求方法
@@ -30,7 +33,7 @@ public abstract class NetWork {
      * @param what      请求标识,NoHttp需要
      */
     public abstract void get(HashMap<String, String> paramsMap, String url,
-                             Object callback, Object tag, int... what);
+                             NetWorkCallback<T> callback, Object tag, int... what);
 
     /**
      * 网络层上传参数和单个文件
@@ -46,7 +49,7 @@ public abstract class NetWork {
     public abstract void uploadFile(String uploadUrl,
                                     HashMap<String, String> paramsMap,
                                     String fileKey, File file,
-                                    Object callback, Object uploadFileTag, int... what);
+                                    NetWorkCallback<T> callback, Object uploadFileTag, int... what);
 
 
     /**
@@ -63,7 +66,7 @@ public abstract class NetWork {
      */
     public abstract void uploadFiles(String uploadUrl, HashMap<String, String> paramsMap,
                                      ArrayList<String> fileKeys, ArrayList<String> fileNames,
-                                     ArrayList<File> files, Object callback, Object uploadFileTag, int... what);
+                                     ArrayList<File> files, NetWorkCallback<T> callback, Object uploadFileTag, int... what);
 
     /**
      * 网络层下载文件
@@ -80,15 +83,7 @@ public abstract class NetWork {
      */
     public abstract void downLoadFile(String downUrl, String savePath, String saveFileName,
                                       long connTimeOut, long readTimeOut, long writeTimeOut,
-                                      Object callBack, Object downFileTag, int... what);
-
-    /**
-     * 判断网络层相应的callback是否满足网络层的要求(是否为对应的callback、listener类等等)
-     *
-     * @param callback
-     * @return
-     */
-    public abstract boolean isCallBackType(Object callback);
+                                      NetWorkCallback<T> callBack, Object downFileTag, int... what);
 
     /**
      * 取消tag对应的请求

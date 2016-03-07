@@ -4,6 +4,9 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/NetWork/NetWork.iml" filepath="$PROJECT_DIR$/NetWork/NetWork.iml" />
       <module fileurl="file://$PROJECT_DIR$/NetWorkUtils.iml" filepath="$PROJECT_DIR$/NetWorkUtils.iml" />
+      <module fileurl="file://$PROJECT_DIR$/NoHttpNetWorkUtils/NoHttpNetWorkUtils.iml" filepath="$PROJECT_DIR$/NoHttpNetWorkUtils/NoHttpNetWorkUtils.iml" />
+      <module fileurl="file://$PROJECT_DIR$/OkHttpNetWorkUtils/OkHttpNetWorkUtils.iml" filepath="$PROJECT_DIR$/OkHttpNetWorkUtils/OkHttpNetWorkUtils.iml" />
+      <module fileurl="file://$PROJECT_DIR$/OkNetWorkUtils/OkNetWorkUtils.iml" filepath="$PROJECT_DIR$/OkNetWorkUtils/OkNetWorkUtils.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

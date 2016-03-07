@@ -1,15 +1,6 @@
 package com.zengcanxiang.network;
 
-import com.yolanda.nohttp.error.ArgumentError;
-import com.yolanda.nohttp.error.ClientError;
-import com.yolanda.nohttp.error.NetworkError;
-import com.yolanda.nohttp.error.ServerError;
-import com.yolanda.nohttp.error.StorageReadWriteError;
-import com.yolanda.nohttp.error.StorageSpaceNotEnoughError;
-import com.yolanda.nohttp.error.TimeoutError;
-import com.yolanda.nohttp.error.URLError;
-import com.yolanda.nohttp.error.UnKnownHostError;
-import com.zengcanxiang.network.OkHttpNetWork.OkHttpNetWork;
+import com.zengcanxiang.network.NetWorkCallback.NetWorkCallback;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -18,7 +9,7 @@ import java.util.HashMap;
 /**
  * Created by zengcanxiang on 2016/2/26.
  */
-public class NetWorkUtil {
+public class NetWorkUtil<T> {
 
     private static boolean debug = false;
 
@@ -39,14 +30,18 @@ public class NetWorkUtil {
         }
     }
 
-    private static NetWork defaultNetWork = new OkHttpNetWork();
+    private static NetWork defaultNetWork;
+
+    public static void init(NetWork network) {
+        setNetWork(network);
+    }
 
     public static void setNetWork(NetWork network) {
         defaultNetWork = network;
     }
 
-    public static <T extends NetWork> T getNetWork(Class<T> cls) {
-        return (T) defaultNetWork;
+    public static <M extends NetWork> M getNetWork(Class<M> cls) {
+        return (M) defaultNetWork;
     }
 
     /**
@@ -62,9 +57,9 @@ public class NetWorkUtil {
     public static final String DEFAULT_TAG = "Framework";
 
     // 相关的默认时间值
-    public static final long TIME_OUT_CONN_DEFAULT = 20000;
-    public static final long TIME_OUT_READ_DEFAULT = 20000;
-    public static final long TIME_OUT_WRITE_DEFAULT = 20000;
+    public static final long TIME_OUT_DEFAULT_CONN = 20000;
+    public static final long TIME_OUT_DEFAULT_READ = 20000;
+    public static final long TIME_OUT_DEFAULT_WRITE = 20000;
 
     /**
      * post方式请求
@@ -77,11 +72,9 @@ public class NetWorkUtil {
      *                  类似handler的what一样，这里用来区分请求
      */
     public static void post(HashMap<String, String> paramsMap, String url,
-                            Object tag, Object callback, int... what) throws IllegalArgumentException {
+                            Object tag, NetWorkCallback callback, int... what) throws IllegalArgumentException {
         catchUrl(url);
-        if (defaultNetWork.isCallBackType(callback)) {
-            defaultNetWork.post(paramsMap, url, tag, callback, what);
-        }
+        defaultNetWork.post(paramsMap, url, callback, tag, what);
     }
 
     /**
@@ -94,7 +87,7 @@ public class NetWorkUtil {
      *                  类似handler的what一样，这里用来区分请求
      */
     public static void post(HashMap<String, String> paramsMap, String url,
-                            Object callback, int... what) {
+                            NetWorkCallback callback, int... what) {
         post(paramsMap, url, DEFAULT_TAG, callback, what);
     }
 
@@ -109,11 +102,9 @@ public class NetWorkUtil {
      *                  类似handler的what一样，这里用来区分请求
      */
     public static void get(HashMap<String, String> paramsMap, String url,
-                           Object tag, Object callback, int... what) {
+                           Object tag, NetWorkCallback callback, int... what) {
         catchUrl(url);
-        if (defaultNetWork.isCallBackType(callback)) {
-            defaultNetWork.get(paramsMap, url, tag, callback, what);
-        }
+        defaultNetWork.get(paramsMap, url, callback, tag, what);
     }
 
     /**
@@ -126,7 +117,7 @@ public class NetWorkUtil {
      *                  类似handler的what一样，这里用来区分请求
      */
     public static void get(HashMap<String, String> paramsMap, String url,
-                           Object callback, int... what) {
+                           NetWorkCallback callback, int... what) {
         get(paramsMap, url, DEFAULT_TAG, callback, what);
     }
 
@@ -143,13 +134,11 @@ public class NetWorkUtil {
      */
     public static void uploadFile(String uploadUrl, Object uploadFileTag,
                                   HashMap<String, String> paramsMap, String fileKey, File file,
-                                  Object callback, int... what) {
+                                  NetWorkCallback callback, int... what) {
         catchUrl(uploadUrl);
-        if (defaultNetWork.isCallBackType(callback)) {
-            defaultNetWork.uploadFile(uploadUrl, paramsMap,
-                    fileKey, file,
-                    callback, uploadFileTag, what);
-        }
+        defaultNetWork.uploadFile(uploadUrl, paramsMap,
+                fileKey, file,
+                callback, uploadFileTag, what);
     }
 
     /**
@@ -163,7 +152,7 @@ public class NetWorkUtil {
      *                      类似handler的what一样，这里用来区分请求
      */
     public static void uploadFile(String uploadUrl, Object uploadFileTag,
-                                  File file, Object callback, int... what) {
+                                  File file, NetWorkCallback callback, int... what) {
         uploadFile(uploadUrl, uploadFileTag, new HashMap<String, String>(), "", file, callback, what);
     }
 
@@ -182,18 +171,16 @@ public class NetWorkUtil {
      */
     public static void uploadFile(String uploadUrl, Object uploadFileTag,
                                   HashMap<String, String> paramsMap, String fileKey, String fileName,
-                                  File file, Object callback, int... what) {
+                                  File file, NetWorkCallback callback, int... what) {
         catchUrl(uploadUrl);
-        if (defaultNetWork.isCallBackType(callback)) {
-            ArrayList<String> fileKeys = new ArrayList<String>();
-            fileKeys.add(fileKey);
-            ArrayList<String> fileNames = new ArrayList<String>();
-            fileNames.add(fileName);
-            ArrayList<File> files = new ArrayList<File>();
-            files.add(file);
-            defaultNetWork.uploadFiles(uploadUrl, paramsMap,
-                    fileKeys, fileNames, files, callback, uploadFileTag, what);
-        }
+        ArrayList<String> fileKeys = new ArrayList<String>();
+        fileKeys.add(fileKey);
+        ArrayList<String> fileNames = new ArrayList<String>();
+        fileNames.add(fileName);
+        ArrayList<File> files = new ArrayList<File>();
+        files.add(file);
+        defaultNetWork.uploadFiles(uploadUrl, paramsMap,
+                fileKeys, fileNames, files, callback, uploadFileTag, what);
     }
 
     /**
@@ -210,7 +197,7 @@ public class NetWorkUtil {
      */
     public static void uploadFile(String uploadUrl, Object uploadFileTag,
                                   String fileKey, String fileName, File file,
-                                  Object callback, int... what) {
+                                  NetWorkCallback callback, int... what) {
         uploadFile(uploadUrl, uploadFileTag, null, fileKey, fileName, file,
                 callback, what);
     }
@@ -231,12 +218,10 @@ public class NetWorkUtil {
     public static void uploadFiles(String uploadUrl, Object uploadFileTag,
                                    ArrayList<String> fileKeys, ArrayList<String> fileNames,
                                    ArrayList<File> files, HashMap<String, String> paramsMap,
-                                   Object callback, int... what) {
+                                   NetWorkCallback callback, int... what) {
         catchUrl(uploadUrl);
-        if (defaultNetWork.isCallBackType(callback)) {
-            defaultNetWork.uploadFiles(uploadUrl, paramsMap,
-                    fileKeys, fileNames, files, callback, uploadFileTag, what);
-        }
+        defaultNetWork.uploadFiles(uploadUrl, paramsMap,
+                fileKeys, fileNames, files, callback, uploadFileTag, what);
     }
 
     /**
@@ -253,7 +238,7 @@ public class NetWorkUtil {
      */
     public static void uploadFiles(String uploadUrl, Object uploadFileTag,
                                    ArrayList<String> fileKeys, ArrayList<String> fileNames,
-                                   ArrayList<File> files, Object callback, int... what) {
+                                   ArrayList<File> files, NetWorkCallback callback, int... what) {
         uploadFiles(uploadUrl, uploadFileTag, fileKeys, fileNames, files, null,
                 callback, what);
     }
@@ -271,9 +256,9 @@ public class NetWorkUtil {
      */
     public static void downFile(String downUrl, Object downFileTag,
                                 String savePath, String saveFileName,
-                                Object callBack, int... what) {
+                                NetWorkCallback callBack, int... what) {
         downFile(downUrl, downFileTag, savePath, saveFileName,
-                TIME_OUT_CONN_DEFAULT, TIME_OUT_READ_DEFAULT, TIME_OUT_WRITE_DEFAULT,
+                TIME_OUT_DEFAULT_CONN, TIME_OUT_DEFAULT_READ, TIME_OUT_DEFAULT_WRITE,
                 callBack, what);
     }
 
@@ -294,13 +279,11 @@ public class NetWorkUtil {
     public static void downFile(String downUrl, Object downFileTag,
                                 String savePath, String saveFileName,
                                 long connTimeOut, long readTimeOut, long writeTimeOut,
-                                Object callback, int... what) {
+                                NetWorkCallback callback, int... what) {
         catchUrl(downUrl);
-        if (defaultNetWork.isCallBackType(callback)) {
-            defaultNetWork.downLoadFile(downUrl, savePath, saveFileName,
-                    connTimeOut, readTimeOut, writeTimeOut,
-                    callback, downFileTag, what);
-        }
+        defaultNetWork.downLoadFile(downUrl, savePath, saveFileName,
+                connTimeOut, readTimeOut, writeTimeOut,
+                callback, downFileTag, what);
     }
 
     /**
@@ -318,35 +301,4 @@ public class NetWorkUtil {
         }
     }
 
-    /**
-     * 判断网络异常是什么
-     *
-     * @param exception
-     * @return
-     */
-    public static String defaultExceptionMessage(Exception exception) {
-        StringBuffer message = new StringBuffer("出错了：");
-        if (exception instanceof ClientError) {
-            message.append("客户端错误");
-        } else if (exception instanceof ServerError) {
-            message.append("服务器发生内部错误");
-        } else if (exception instanceof NetworkError) {
-            message.append("网络不可用，请检查网络");
-        } else if (exception instanceof StorageReadWriteError) {
-            message.append("存储卡错误，请检查存储卡");
-        } else if (exception instanceof StorageSpaceNotEnoughError) {
-            message.append("存储位置空间不足");
-        } else if (exception instanceof TimeoutError) {
-            message.append("超时");
-        } else if (exception instanceof UnKnownHostError) {
-            message.append("服务器找不到");
-        } else if (exception instanceof URLError) {
-            message.append("url地址错误");
-        } else if (exception instanceof ArgumentError) {
-            message.append("参数错误");
-        } else {
-            message.append("未知错误");
-        }
-        return message.toString();
-    }
 }

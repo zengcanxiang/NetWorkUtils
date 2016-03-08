@@ -9,15 +9,7 @@ version = "1.0.0"
 group = "com.zengcanxiang"
 
 ext {
-    ProjectDescription = "Now Android universal httpclient、 httpUrlConnection、 Okhttp. " +
-            "But in the past, because the network layer instability and change (Android M delete the httpclient code), " +
-            "in order to better network performance, was replaced." +
-            " Thus the internal logical code needs to change, reconstruction, this is painful." +
-            "NetWorkUtils provide a relatively fixed call layer, internal in network layer calls and replacement," +
-            " if you want to change the network layer and do not need to modify prior to the use of the code. " +
-            "If you want to expand the tools, only need to abstract classes that inherit NetWorkUtils. " +
-            "Tell your extended network, you can use their own expansion."
-
+    ProjectDescription = " A scalable Library of requests for Android networks"
     JcName = "NetWorkUtils"
     developer_id = "zengcanxiang"
     developer_name = "zengcanxiang"

@@ -88,7 +88,7 @@ public abstract class NetWork<T> {
     /**
      * 取消tag对应的请求
      *
-     * @param tag
+     * @param tag 请求tag
      */
     public abstract void cancel(Object tag);
 

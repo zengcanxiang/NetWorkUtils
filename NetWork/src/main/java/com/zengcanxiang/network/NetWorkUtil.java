@@ -127,6 +127,7 @@ public class NetWorkUtil<T> {
      * @param uploadUrl     上传url
      * @param uploadFileTag 上传文件请求tag
      * @param paramsMap     键值对
+     * @param fileKey       文件key
      * @param file          文件
      * @param callback      上传回调
      * @param what          当使用noHttp等网络层需要请求what时传入,默认OkHttp不需要

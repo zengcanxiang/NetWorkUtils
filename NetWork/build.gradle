@@ -5,7 +5,7 @@ apply plugin: 'com.jfrog.bintray'
 def siteUrl = 'https://github.com/zengcanxiang/NetWorkUtils'
 def gitUrl = 'https://github.com/zengcanxiang/NetWorkUtils.git'
 
-version = "1.0.0"
+version = "1.0.1"
 group = "com.zengcanxiang"
 
 ext {
@@ -21,10 +21,10 @@ android {
     buildToolsVersion "23.0.1"
 
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 7
         targetSdkVersion 23
         versionCode 1
-        versionName "1.0"
+        versionName version
     }
     buildTypes {
         release {
@@ -36,8 +36,6 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:23.1.0'
-    compile fileTree(include: ['*.jar'], dir: 'libs')
 }
 
 install {

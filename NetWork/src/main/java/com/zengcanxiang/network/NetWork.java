@@ -1,5 +1,7 @@
 package com.zengcanxiang.network;
 
+import android.app.Application;
+
 import com.zengcanxiang.network.NetWorkCallback.NetWorkCallback;
 
 import java.io.File;
@@ -10,6 +12,8 @@ import java.util.HashMap;
  * Created by zengcanxiang on 2016/2/26.
  */
 public abstract class NetWork<T> {
+
+    public abstract void init(Application application);
 
     /**
      * 网络层的post请求方法

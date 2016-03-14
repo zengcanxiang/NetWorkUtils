@@ -1,5 +1,7 @@
 package com.zengcanxiang.network;
 
+import android.app.Application;
+
 import com.zengcanxiang.network.NetWorkCallback.NetWorkCallback;
 
 import java.io.File;
@@ -32,8 +34,9 @@ public class NetWorkUtil<T> {
 
     private static NetWork defaultNetWork;
 
-    public static void init(NetWork network) {
+    public static void init(Application application,NetWork network) {
         setNetWork(network);
+        defaultNetWork.init(application);
     }
 
     public static void setNetWork(NetWork network) {

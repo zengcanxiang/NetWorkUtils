@@ -3,9 +3,9 @@ package com.zengcanxiang.network.NetWorkCallback;
 import com.zengcanxiang.network.NetWorkResponse;
 
 /**
- * Created by Administrator on 2016/3/5.
+ * 下载callback
  */
-public abstract class DownCallback extends NetWorkCallback{
+public abstract class DownCallback extends NetWorkCallback {
 
     public abstract void onDownSucceed(String filePath);
 

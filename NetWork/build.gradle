@@ -5,7 +5,7 @@ apply plugin: 'com.jfrog.bintray'
 def siteUrl = 'https://github.com/zengcanxiang/NetWorkUtils'
 def gitUrl = 'https://github.com/zengcanxiang/NetWorkUtils.git'
 
-version = "1.0.1"
+version = "1.0.3"
 group = "com.zengcanxiang"
 
 ext {

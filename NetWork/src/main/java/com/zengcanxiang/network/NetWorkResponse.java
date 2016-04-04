@@ -1,7 +1,7 @@
 package com.zengcanxiang.network;
 
 /**
- * Created by Administrator on 2016/3/5.
+ * 请求结果类
  */
 public abstract class NetWorkResponse<T> {
 

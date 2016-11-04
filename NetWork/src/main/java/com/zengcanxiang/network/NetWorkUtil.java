@@ -1,25 +1,38 @@
 package com.zengcanxiang.network;
 
 import android.app.Application;
+import android.util.Log;
 import android.webkit.URLUtil;
 
-import com.alibaba.fastjson.JSONObject;
-import com.zengcanxiang.network.NetWorkCallback.NetWorkCallback;
-
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * NetWorkUtils入口类
  */
-public class NetWorkUtil<T> {
+public final class NetWorkUtil {
 
     private static NetWork defaultNetWork;
 
-    public static void init(Application application, NetWork network) {
-        setNetWork(network);
-        defaultNetWork.init(application);
+    public static void init(Application app, Class netWorkClz) {
+        if (netWorkClz == null) {
+            throw new IllegalArgumentException("init netWorkClz is null");
+        }
+        try {
+            init(app, (NetWork) netWorkClz.newInstance());
+        } catch (Exception e) {
+            Log.e("NetWorkUtil", "netWork init error");
+            throw new IllegalArgumentException("netWork init error :" + e.getMessage());
+        }
+    }
+
+    public static void init(Application app, NetWork netWork) {
+        if (netWork == null) {
+            throw new IllegalArgumentException("init network is null");
+        }
+        setNetWork(netWork);
+        defaultNetWork.init(app);
     }
 
     public static void setNetWork(NetWork network) {
@@ -31,9 +44,9 @@ public class NetWorkUtil<T> {
     }
 
     // 超时的相关的时间值
-    public static final long TIME_OUT_DEFAULT_CONN = 20000;
-    public static final long TIME_OUT_DEFAULT_READ = 20000;
-    public static final long TIME_OUT_DEFAULT_WRITE = 20000;
+    public static final long TIME_OUT_DEFAULT_CONN = 1000 * 10 * 2;
+    public static final long TIME_OUT_DEFAULT_READ = 1000 * 10 * 2;
+    public static final long TIME_OUT_DEFAULT_WRITE = 1000 * 10 * 2;
 
     /**
      * post方式请求
@@ -42,14 +55,12 @@ public class NetWorkUtil<T> {
      * @param url       请求url
      * @param tag       请求tag
      * @param callback  请求回调
-     * @param what      当使用noHttp等网络层需要请求what时传入,OkHttp不需要
-     *                  类似handler的what一样，这里用来区分请求
      */
     public static void post(String url, HashMap<String, String> paramsMap,
-                            NetWorkCallback callback, Object tag, int... what) {
+                            String tag, NetWorkCallback callback) {
         post(url, paramsMap,
                 TIME_OUT_DEFAULT_CONN, TIME_OUT_DEFAULT_READ, TIME_OUT_DEFAULT_WRITE,
-                callback, tag, what);
+                tag, callback);
     }
 
     /**
@@ -60,18 +71,19 @@ public class NetWorkUtil<T> {
      * @param connTimeOut  连接超时时间
      * @param readTimeOut  读取超时时间
      * @param writeTimeOut 写入超时时间
-     * @param callback     请求回调
      * @param tag          请求tag
-     * @param what         当使用noHttp等网络层需要请求what时传入,OkHttp不需要
-     *                     类似handler的what一样，这里用来区分请求
+     * @param callback     请求回调
      */
     public static void post(String url, HashMap<String, String> paramsMap,
                             long connTimeOut, long readTimeOut, long writeTimeOut,
-                            NetWorkCallback callback, Object tag, int... what) {
-        catchUrl(url);
-        defaultNetWork.post(url, paramsMap,
-                connTimeOut, readTimeOut, writeTimeOut,
-                callback, tag, what);
+                            String tag, NetWorkCallback callback) {
+        if (catchUrl(url)) {
+            defaultNetWork.post(url, paramsMap,
+                    connTimeOut, readTimeOut, writeTimeOut,
+                    tag, callback);
+        } else {
+            callback.onError(new NetWorkError("url不符合规则 没有http或者https前缀"));
+        }
     }
 
     /**
@@ -81,13 +93,11 @@ public class NetWorkUtil<T> {
      * @param url        请求url
      * @param callback   请求回调
      * @param tag        请求tag
-     * @param what       当使用noHttp等网络层需要请求what时传入,OkHttp不需要
-     *                   类似handler的what一样，这里用来区分请求
      */
-    public static void post(String url, JSONObject paramsJSON, NetWorkCallback callback, Object tag, int... what) {
+    public static void post(String url, String paramsJSON, String tag, NetWorkCallback callback) {
         post(url, paramsJSON,
                 TIME_OUT_DEFAULT_CONN, TIME_OUT_DEFAULT_READ, TIME_OUT_DEFAULT_WRITE,
-                callback, tag, what);
+                tag, callback);
     }
 
     /**
@@ -98,18 +108,19 @@ public class NetWorkUtil<T> {
      * @param connTimeOut  连接超时时间
      * @param readTimeOut  读取超时时间
      * @param writeTimeOut 写入超时时间
-     * @param callback     请求回调
      * @param tag          请求tag
-     * @param what         当使用noHttp等网络层需要请求what时传入,OkHttp不需要
-     *                     类似handler的what一样，这里用来区分请求
+     * @param callback     请求回调
      */
-    public static void post(String url, JSONObject paramsJSON,
+    public static void post(String url, String paramsJSON,
                             long connTimeOut, long readTimeOut, long writeTimeOut,
-                            NetWorkCallback callback, Object tag, int... what) {
-        catchUrl(url);
-        defaultNetWork.post(url, paramsJSON,
-                connTimeOut, readTimeOut, writeTimeOut,
-                callback, tag, what);
+                            String tag, NetWorkCallback callback) {
+        if (catchUrl(url)) {
+            defaultNetWork.post(url, paramsJSON,
+                    connTimeOut, readTimeOut, writeTimeOut,
+                    tag, callback);
+        } else {
+            callback.onError(new NetWorkError("url不符合规则 没有http或者https前缀"));
+        }
     }
 
     /**
@@ -117,16 +128,14 @@ public class NetWorkUtil<T> {
      *
      * @param paramsMap 参数键值对
      * @param url       请求url
-     * @param callback  请求回调
      * @param tag       请求tag
-     * @param what      当使用noHttp等网络层需要请求what时传入,OkHttp不需要
-     *                  类似handler的what一样，这里用来区分请求
+     * @param callback  请求回调
      */
     public static void get(String url, HashMap<String, String> paramsMap,
-                           NetWorkCallback callback, Object tag, int... what) {
+                           String tag, NetWorkCallback callback) {
         get(url, paramsMap,
                 TIME_OUT_DEFAULT_CONN, TIME_OUT_DEFAULT_READ, TIME_OUT_DEFAULT_WRITE,
-                callback, tag, what);
+                tag, callback);
     }
 
     /**
@@ -137,18 +146,20 @@ public class NetWorkUtil<T> {
      * @param connTimeOut  连接超时时间
      * @param readTimeOut  读取超时时间
      * @param writeTimeOut 写入超时时间
-     * @param callback     请求回调
      * @param tag          请求tag
-     * @param what         当使用noHttp等网络层需要请求what时传入,OkHttp不需要
-     *                     类似handler的what一样，这里用来区分请求
+     * @param callback     请求回调
      */
     public static void get(String url, HashMap<String, String> paramsMap,
                            long connTimeOut, long readTimeOut, long writeTimeOut,
-                           NetWorkCallback callback, Object tag, int... what) {
-        catchUrl(url);
-        defaultNetWork.get(url, paramsMap,
-                connTimeOut, readTimeOut, writeTimeOut,
-                callback, tag, what);
+                           String tag, NetWorkCallback callback) {
+        if (catchUrl(url)) {
+            defaultNetWork.get(url, paramsMap,
+                    connTimeOut, readTimeOut, writeTimeOut,
+                    tag, callback);
+        } else {
+            callback.onError(new NetWorkError("url不符合规则 没有http或者https前缀"));
+        }
+
     }
 
 
@@ -159,55 +170,116 @@ public class NetWorkUtil<T> {
      * @param paramsMap     键值对
      * @param fileKey       文件key
      * @param file          文件
-     * @param callback      上传回调
      * @param uploadFileTag 上传文件请求tag
-     * @param what          当使用noHttp等网络层需要请求what时传入,OkHttp不需要
-     *                      类似handler的what一样，这里用来区分请求
+     * @param callback      上传回调
      */
-    public static void uploadFile(String uploadUrl,
-                                  HashMap<String, String> paramsMap, String fileKey, File file,
-                                  NetWorkCallback callback, Object uploadFileTag, int... what) {
+
+    public static void uploadFile(String uploadUrl, HashMap<String, String> paramsMap,
+                                  String fileKey, File file,
+                                  String uploadFileTag, NetWorkCallback callback) {
+        uploadFile(uploadUrl, paramsMap,
+                fileKey, file,
+                NetWorkUtil.TIME_OUT_DEFAULT_CONN, NetWorkUtil.TIME_OUT_DEFAULT_READ, NetWorkUtil.TIME_OUT_DEFAULT_WRITE,
+                uploadFileTag, callback);
+    }
+
+    /**
+     * 上传文件
+     *
+     * @param uploadUrl     上传url
+     * @param paramsMap     键值对
+     * @param fileKey       文件key
+     * @param file          文件
+     * @param connTimeOut   连接超时时间
+     * @param readTimeOut   读取超时时间
+     * @param writeTimeOut  写入超时时间
+     * @param uploadFileTag 上传文件请求tag
+     * @param callback      上传回调
+     */
+    public static void uploadFile(String uploadUrl, HashMap<String, String> paramsMap,
+                                  String fileKey, File file,
+                                  long connTimeOut, long readTimeOut, long writeTimeOut,
+                                  String uploadFileTag, NetWorkCallback callback) {
         catchUrl(uploadUrl);
         defaultNetWork.uploadFile(uploadUrl, paramsMap,
-                fileKey, file,
-                callback, uploadFileTag, what);
+                fileKey, file, connTimeOut, readTimeOut, writeTimeOut,
+                uploadFileTag, callback);
     }
+
+    /**
+     * 上传多个文件
+     *
+     * @param uploadUrl     上传url
+     * @param paramsMap     上传同时带的参数
+     * @param fileKeys      文件分别对应的keys
+     * @param files         文件s
+     * @param uploadFileTag 上传文件请求tag
+     * @param callback      请求回调
+     */
+    public static void uploadFile(String uploadUrl, HashMap<String, String> paramsMap,
+                                  List<String> fileKeys, List<File> files,
+                                  String uploadFileTag, NetWorkCallback callback) {
+        uploadFile(uploadUrl, paramsMap,
+                fileKeys, files,
+                NetWorkUtil.TIME_OUT_DEFAULT_CONN, NetWorkUtil.TIME_OUT_DEFAULT_READ, NetWorkUtil.TIME_OUT_DEFAULT_WRITE,
+                uploadFileTag, callback);
+    }
+
     /**
      * 上传多个文件
      *
      * @param uploadUrl     上传url
      * @param paramsMap     上传同时带的参数
      * @param fileKeys      文件分别对应的key
-     * @param fileNames     文件分别对应的name
      * @param files         文件
-     * @param callback      请求回调
      * @param uploadFileTag 上传文件请求tag
-     * @param what          当使用noHttp等网络层需要请求what时传入,OkHttp不需要
-     *                      类似handler的what一样，这里用来区分请求
+     * @param callback      请求回调
      */
-    public static void uploadFiles(String uploadUrl, HashMap<String, String> paramsMap,
-                                   ArrayList<String> fileKeys, ArrayList<String> fileNames,
-                                   ArrayList<File> files, NetWorkCallback callback,
-                                   Object uploadFileTag, int... what) {
+    public static void uploadFile(String uploadUrl, HashMap<String, String> paramsMap,
+                                  List<String> fileKeys, List<File> files,
+                                  long connTimeOut, long readTimeOut, long writeTimeOut,
+                                  String uploadFileTag, NetWorkCallback callback) {
         catchUrl(uploadUrl);
-        defaultNetWork.uploadFiles(uploadUrl, paramsMap,
-                fileKeys, fileNames, files,
-                callback, uploadFileTag, what);
+        defaultNetWork.uploadFile(uploadUrl, paramsMap,
+                fileKeys, files,
+                connTimeOut, readTimeOut, writeTimeOut,
+                uploadFileTag, callback);
     }
 
     /**
      * 上传文件,不需要其他参数
      *
      * @param uploadUrl     上传url
-     * @param uploadFileTag 上传文件请求tag
      * @param file          文件
+     * @param uploadFileTag 上传文件请求tag
      * @param callback      上传回调
-     * @param what          当使用noHttp等网络层需要请求what时传入,OkHttp不需要
-     *                      类似handler的what一样，这里用来区分请求
      */
-    public static void uploadFile(String uploadUrl, Object uploadFileTag,
-                                  File file, NetWorkCallback callback, int... what) {
-        uploadFile(uploadUrl, new HashMap<String, String>(), "", file, callback, uploadFileTag, what);
+    public static void uploadFile(String uploadUrl,
+                                  String fileKey, File file,
+                                  String uploadFileTag, NetWorkCallback callback) {
+        uploadFile(uploadUrl,
+                fileKey, file,
+                NetWorkUtil.TIME_OUT_DEFAULT_CONN, NetWorkUtil.TIME_OUT_DEFAULT_READ, NetWorkUtil.TIME_OUT_DEFAULT_WRITE,
+                uploadFileTag, callback);
+    }
+
+    /**
+     * 上传文件,不需要其他参数
+     *
+     * @param uploadUrl     上传url
+     * @param file          文件
+     * @param uploadFileTag 上传文件请求tag
+     * @param callback      上传回调
+     */
+    public static void uploadFile(String uploadUrl,
+                                  String fileKey, File file,
+                                  long connTimeOut, long readTimeOut, long writeTimeOut,
+                                  String uploadFileTag, NetWorkCallback callback) {
+        uploadFile(uploadUrl,
+                new HashMap<String, String>(),
+                fileKey, file,
+                connTimeOut, readTimeOut, writeTimeOut,
+                uploadFileTag, callback);
     }
 
 
@@ -215,43 +287,41 @@ public class NetWorkUtil<T> {
      * 下载文件,使用默认超时时间
      *
      * @param downUrl      下载url
-     * @param downFileTag  下载请求tag
      * @param savePath     保存路径
      * @param saveFileName 保存的文件名称
+     * @param downFileTag  下载请求tag
      * @param callBack     请求回调
-     * @param what         当使用noHttp等网络层需要请求what时传入,OkHttp不需要
-     *                     类似handler的what一样，这里用来区分请求
      */
-    public static void downFile(String downUrl, Object downFileTag,
-                                String savePath, String saveFileName,
-                                NetWorkCallback callBack, int... what) {
-        downFile(downUrl, downFileTag, savePath, saveFileName,
+    public static void downFile(String downUrl, String savePath,
+                                String saveFileName, String downFileTag,
+                                DownCallback callBack) {
+        downFile(downUrl, savePath, saveFileName,
                 TIME_OUT_DEFAULT_CONN, TIME_OUT_DEFAULT_READ, TIME_OUT_DEFAULT_WRITE,
-                callBack, what);
+                downFileTag, callBack);
     }
 
     /**
      * 下载文件,有时间方面要求的
      *
      * @param downUrl      下载url
-     * @param downFileTag  下载请求tag
      * @param savePath     保存路径
      * @param saveFileName 保存的文件名称
      * @param connTimeOut  连接超时限制
      * @param readTimeOut  读取超时限制
      * @param writeTimeOut 写操作超时限制
+     * @param downFileTag  下载请求tag
      * @param callback     请求回调
-     * @param what         当使用noHttp等网络层需要请求what时传入,OkHttp不需要
-     *                     类似handler的what一样，这里用来区分请求
      */
-    public static void downFile(String downUrl, Object downFileTag,
-                                String savePath, String saveFileName,
+    public static void downFile(String downUrl, String savePath, String saveFileName,
                                 long connTimeOut, long readTimeOut, long writeTimeOut,
-                                NetWorkCallback callback, int... what) {
-        catchUrl(downUrl);
-        defaultNetWork.downLoadFile(downUrl, savePath, saveFileName,
-                connTimeOut, readTimeOut, writeTimeOut,
-                callback, downFileTag, what);
+                                String downFileTag, DownCallback callback) {
+        if (catchUrl(downUrl)) {
+            defaultNetWork.downFile(downUrl, savePath, saveFileName,
+                    connTimeOut, readTimeOut, writeTimeOut,
+                    downFileTag, callback);
+        } else {
+            callback.onError(new NetWorkError("url不符合规则 没有http或者https前缀"));
+        }
     }
 
 
@@ -260,15 +330,37 @@ public class NetWorkUtil<T> {
      *
      * @param tag 请求对应的tag
      */
-    public static void cancelTag(Object tag) {
+    public static void cancel(String tag) {
         defaultNetWork.cancel(tag);
     }
 
-    private static void catchUrl(String url) {
+    /**
+     * 取消某个tag对应的下载请求
+     *
+     * @param tag 请求对应的tag
+     */
+    public static void cancelDown(String tag) {
+        defaultNetWork.cancelDown(tag);
+    }
 
-        if(!URLUtil.isNetworkUrl(url)){
-            throw new IllegalArgumentException("url不符合规则 没有http或者https前缀");
-        }
+    /**
+     * 取消某个tag对应的上传请求
+     *
+     * @param tag 请求对应的tag
+     */
+    public static void cancelUpload(String tag) {
+        defaultNetWork.cancelUpload(tag);
+    }
+
+    /**
+     * 取消所有请求
+     */
+    public static void cancelAll() {
+        defaultNetWork.cancelAll();
+    }
+
+    private static boolean catchUrl(String url) {
+        return URLUtil.isNetworkUrl(url);
     }
 
 }
